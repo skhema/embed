@@ -1,0 +1,81 @@
+{
+  "name": "@skhema/embed",
+  "version": "0.1.14",
+  "description": "Embeddable component for integrating strategic elements with Skhema.",
+  "main": "dist/index.cjs",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "sideEffects": true,
+  "browser": "dist/embed.min.js",
+  "unpkg": "dist/embed.min.js",
+  "jsdelivr": "dist/embed.min.js",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.es.js"
+    },
+    "./tokens": {
+      "types": "./dist/tokens.d.ts",
+      "import": "./dist/tokens.es.js",
+      "require": "./dist/tokens.cjs",
+      "default": "./dist/tokens.es.js"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "import": "./dist/render.es.js",
+      "require": "./dist/render.cjs",
+      "default": "./dist/render.es.js"
+    },
+    "./cdn": {
+      "types": "./dist/cdn.d.ts",
+      "import": "./dist/embed.min.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc && vite build && BUILD_TARGET=cdn vite build",
+    "prebuild": "rm -rf dist"
+  },
+  "keywords": [
+    "skhema",
+    "embed",
+    "strategic-content",
+    "embeddable",
+    "analytics",
+    "content"
+  ],
+  "author": "Skhema Team",
+  "license": "MIT",
+  "dependencies": {
+    "@skhema/method": "0.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^9.29.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "terser": "^5.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^7.0.0",
+    "vite-plugin-dts": "^4.0.0",
+    "vitest": "^4.0.17"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skhema/embed.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skhema/embed/issues"
+  },
+  "homepage": "https://skhema.com/docs/embed"
+}

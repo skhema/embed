@@ -1,0 +1,161 @@
+:host {
+  --skhema-primary: #2563eb;
+  --skhema-primary-hover: #1d4ed8;
+  --skhema-secondary: #64748b;
+  --skhema-success: #059669;
+  --skhema-border: #e2e8f0;
+  --skhema-bg: #ffffff;
+  --skhema-text: #1e293b;
+  --skhema-text-muted: #64748b;
+  --skhema-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --skhema-shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  display: block;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--skhema-text);
+}
+
+:host([theme='dark']) {
+  --skhema-bg: #1e293b;
+  --skhema-text: #f1f5f9;
+  --skhema-text-muted: #94a3b8;
+  --skhema-border: #334155;
+  --skhema-primary: #3b82f6;
+  --skhema-primary-hover: #2563eb;
+}
+
+.skhema-wrapper {
+  position: relative;
+  display: inline-block;
+  background: var(--skhema-bg);
+  border: 1px solid var(--skhema-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: var(--skhema-shadow);
+  transition: all 0.2s ease;
+}
+
+.skhema-wrapper:hover {
+  box-shadow: var(--skhema-shadow-lg);
+  border-color: var(--skhema-primary);
+}
+
+.skhema-content {
+  display: inline;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.skhema-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--skhema-primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.skhema-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--skhema-primary);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.skhema-save-btn:hover {
+  background: var(--skhema-primary-hover);
+}
+
+.skhema-save-btn:focus {
+  outline: 2px solid var(--skhema-primary);
+  outline-offset: 2px;
+}
+
+.skhema-attribution {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--skhema-text-muted);
+}
+
+.skhema-attribution a {
+  color: var(--skhema-text-muted);
+  text-decoration: none;
+}
+
+.skhema-attribution a:hover {
+  color: var(--skhema-primary);
+  text-decoration: underline;
+}
+
+.skhema-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.skhema-error-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.skhema-error-list {
+  margin: 0;
+  padding-left: 16px;
+}
+
+/* Loading state */
+.skhema-loading {
+  background: var(--skhema-bg);
+  border: 1px solid var(--skhema-border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: var(--skhema-text-muted);
+  font-size: 12px;
+}
+
+.skhema-loading::after {
+  content: '...';
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0%,
+  33% {
+    content: '...';
+  }
+  66% {
+    content: '..';
+  }
+  100% {
+    content: '.';
+  }
+}
+
+/* Hide structured data */
+.skhema-structured-data {
+  display: none !important;
+}
