@@ -1,6 +1,6 @@
 {
   "name": "@skhema/embed",
-  "version": "0.1.14",
+  "version": "0.2.0",
   "description": "Embeddable component for integrating strategic elements with Skhema.",
   "keywords": [
     "skhema",
@@ -35,6 +35,12 @@
       "import": "./dist/render.es.js",
       "require": "./dist/render.cjs",
       "default": "./dist/render.es.js"
+    },
+    "./snippets": {
+      "types": "./dist/snippets.d.ts",
+      "import": "./dist/snippets.es.js",
+      "require": "./dist/snippets.cjs",
+      "default": "./dist/snippets.es.js"
     },
     "./cdn": {
       "types": "./dist/cdn.d.ts",

@@ -114,6 +114,39 @@ web components render this same HTML and layer browser-only hover/transition CSS
 on top; a snapshot-parity test (`src/render/index.test.ts`) guards the output so
 any change to the official format is a deliberate, reviewed diff.
 
+## Snippet generator (`@skhema/embed/snippets`)
+
+`@skhema/embed/snippets` is the **canonical, DOM-free generator of copy-ready
+embed snippets** — the single implementation behind the contributor app's
+composer/docs and `@skhema/cli`'s `skhema generate embed|link`. One content
+model, three destinations:
+
+```ts
+import {
+  generateWebsiteEmbed, // pinned-CDN <script> + <skhema-element> block
+  generateEmailEmbed, // email-safe card HTML + email-tagged save URL
+  buildSaveUrl, // bare /save handoff link (per-channel UTM defaults)
+  buildEmbedPageUrl, // skhema.com/embed/e|c/<id> share-page URL
+  EMBED_CDN_VERSION, // the version pin snippets are generated with
+} from '@skhema/embed/snippets'
+
+const { snippet } = generateWebsiteEmbed({
+  elementType: 'key_challenge',
+  content: 'Metropolitan unemployment is redirecting apparel demand.',
+  contributorId: 'ctr_123',
+  authorName: 'Jordan Mills',
+  authorSlug: 'jordan-mills',
+})
+```
+
+Component variants exist for every generator (`generateComponentWebsiteEmbed`,
+`generateComponentEmailEmbed`, `buildComponentSaveUrl`). Inputs are validated
+against the `@skhema/method` vocabulary and HTML-escaped.
+
+`EMBED_CDN_VERSION` is injected at build time from this package's own version,
+so generated snippets always pin the exact renderer they were generated with —
+the pin cannot drift from the published package.
+
 ## License
 
 MIT
