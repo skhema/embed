@@ -2,17 +2,21 @@
   "name": "@skhema/embed",
   "version": "0.1.14",
   "description": "Embeddable component for integrating strategic elements with Skhema.",
+  "keywords": [
+    "skhema",
+    "embed",
+    "strategic-content",
+    "embeddable",
+    "analytics",
+    "content"
+  ],
+  "author": "Skhema Team",
+  "license": "MIT",
+  "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
-  "sideEffects": true,
   "browser": "dist/embed.min.js",
-  "unpkg": "dist/embed.min.js",
-  "jsdelivr": "dist/embed.min.js",
-  "files": [
-    "dist"
-  ],
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -38,20 +42,12 @@
     },
     "./package.json": "./package.json"
   },
-  "scripts": {
-    "build": "tsc && vite build && BUILD_TARGET=cdn vite build",
-    "prebuild": "rm -rf dist"
-  },
-  "keywords": [
-    "skhema",
-    "embed",
-    "strategic-content",
-    "embeddable",
-    "analytics",
-    "content"
+  "sideEffects": true,
+  "files": [
+    "dist"
   ],
-  "author": "Skhema Team",
-  "license": "MIT",
+  "unpkg": "dist/embed.min.js",
+  "jsdelivr": "dist/embed.min.js",
   "dependencies": {
     "@skhema/method": "0.4.1"
   },
@@ -66,10 +62,6 @@
     "vite-plugin-dts": "^4.0.0",
     "vitest": "^4.0.17"
   },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/skhema/embed.git"
@@ -77,5 +69,13 @@
   "bugs": {
     "url": "https://github.com/skhema/embed/issues"
   },
-  "homepage": "https://skhema.com/docs/embed"
+  "homepage": "https://skhema.com/docs/embed",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc && vite build && BUILD_TARGET=cdn vite build",
+    "prebuild": "rm -rf dist"
+  }
 }
