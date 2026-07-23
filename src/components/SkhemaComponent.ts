@@ -210,6 +210,10 @@ export class SkhemaComponent extends HTMLElement {
   private componentConnected = false
   private hasTrackedLoad = false
   private pendingRender: number | null = null
+  /** Grace-window timer before showing the "requires child elements" error. */
+  private emptyChildrenFallback: number | null = null
+  /** True once the grace window has expired — the error card may render. */
+  private gracePeriodExpired = false
   private themeObserver: MutationObserver | null = null
   private mediaQueryListener: MediaQueryList | null = null
 
@@ -268,6 +272,10 @@ export class SkhemaComponent extends HTMLElement {
       cancelAnimationFrame(this.pendingRender)
       this.pendingRender = null
     }
+    if (this.emptyChildrenFallback !== null) {
+      clearTimeout(this.emptyChildrenFallback)
+      this.emptyChildrenFallback = null
+    }
   }
 
   attributeChangedCallback(
@@ -306,11 +314,34 @@ export class SkhemaComponent extends HTMLElement {
     const childElements = this.gatherChildElements(componentType)
 
     if (childElements.length === 0) {
+      // Children upgrade at their opening tag and initialise on a deferred
+      // frame (see SkhemaElement.initNested), so light-DOM children that
+      // exist but haven't announced yet are almost certainly still parsing —
+      // they re-trigger this render via skhema:element-ready. Keep the
+      // skeleton and only fall back to the error card if nothing announces
+      // within the grace window (a genuine authoring mistake).
+      const hasPendingChildren = this.querySelector('skhema-element') !== null
+      if (hasPendingChildren && !this.gracePeriodExpired) {
+        if (this.emptyChildrenFallback === null) {
+          this.emptyChildrenFallback = window.setTimeout(() => {
+            this.emptyChildrenFallback = null
+            this.gracePeriodExpired = true
+            this.scheduleRender()
+          }, 2000)
+        }
+        return
+      }
       this.renderError('Component requires child elements', [
         'Add <skhema-element> children inside this component',
       ])
       return
     }
+
+    if (this.emptyChildrenFallback !== null) {
+      clearTimeout(this.emptyChildrenFallback)
+      this.emptyChildrenFallback = null
+    }
+    this.gracePeriodExpired = false
 
     const componentHash = generateComponentHash(
       childElements.map((el) => ({

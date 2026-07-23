@@ -258,44 +258,21 @@ export class SkhemaElement extends HTMLElement {
     if (this.closest('skhema-component')) {
       this.nestedMode = true
 
-      // Validate and parse content
-      const validation = validateAttributes(this as HTMLElement)
-      if (!validation.isValid) {
-        console.warn(
-          'skhema-element: invalid attributes in nested mode',
-          validation.errors
-        )
-        return
-      }
-
-      const content = this.getContent()
-      if (!content.trim()) {
-        console.warn('skhema-element: empty content in nested mode')
-        return
-      }
-
-      this.contentData = {
-        contributor_id: validation.contributorId,
-        element_id: this.getAttribute('element-id') || undefined,
-        element_type: validation.elementType!,
-        content: content,
-        content_hash: generateContentHash(content),
-        source_url: this.getAttribute('source-url') || window.location.href,
-        timestamp: new Date().toISOString(),
-        page_title: document.title,
-      }
-
-      // Clear shadow DOM — parent component handles rendering
-      this.shadow.innerHTML = ''
-
-      // Dispatch ready event so parent component can discover us
-      this.dispatchEvent(
-        new CustomEvent('skhema:element-ready', {
-          bubbles: true,
-          composed: true,
-          detail: this.getElementData(),
-        })
-      )
+      // During HTML parsing, custom elements upgrade at their OPENING tag —
+      // before their text children exist. Reading content synchronously here
+      // sees an empty element whenever the CDN script loads before the
+      // markup, so the element never announces itself and the parent renders
+      // "requires child elements". Defer like the standalone path (rAF), and
+      // if the text still hasn't parsed by then, retry once parsing finishes.
+      requestAnimationFrame(() => {
+        if (this.initNested() === 'retry') {
+          document.addEventListener(
+            'DOMContentLoaded',
+            () => this.initNested(),
+            { once: true }
+          )
+        }
+      })
       return
     }
 
@@ -312,6 +289,54 @@ export class SkhemaElement extends HTMLElement {
     } catch (error) {
       this.renderError('Failed to initialize component', error)
     }
+  }
+
+  /**
+   * Initialise nested mode: validate, capture content, hand rendering to the
+   * parent component via `skhema:element-ready`. Returns `'retry'` when the
+   * content is empty but the document is still parsing (the caller retries on
+   * DOMContentLoaded); `'done'` otherwise.
+   */
+  private initNested(): 'done' | 'retry' {
+    const validation = validateAttributes(this as HTMLElement)
+    if (!validation.isValid) {
+      console.warn(
+        'skhema-element: invalid attributes in nested mode',
+        validation.errors
+      )
+      return 'done'
+    }
+
+    const content = this.getContent()
+    if (!content.trim()) {
+      if (document.readyState === 'loading') return 'retry'
+      console.warn('skhema-element: empty content in nested mode')
+      return 'done'
+    }
+
+    this.contentData = {
+      contributor_id: validation.contributorId,
+      element_id: this.getAttribute('element-id') || undefined,
+      element_type: validation.elementType!,
+      content: content,
+      content_hash: generateContentHash(content),
+      source_url: this.getAttribute('source-url') || window.location.href,
+      timestamp: new Date().toISOString(),
+      page_title: document.title,
+    }
+
+    // Clear shadow DOM — parent component handles rendering
+    this.shadow.innerHTML = ''
+
+    // Dispatch ready event so parent component can discover us
+    this.dispatchEvent(
+      new CustomEvent('skhema:element-ready', {
+        bubbles: true,
+        composed: true,
+        detail: this.getElementData(),
+      })
+    )
+    return 'done'
   }
 
   disconnectedCallback() {
