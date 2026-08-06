@@ -18,6 +18,10 @@ import {
 } from '../utils/component-validation.js'
 import { generateComponentHash } from '../utils/hash.js'
 import {
+  PROVENANCE_ATTRIBUTES,
+  provenanceFromAttributes,
+} from '../utils/provenance.js'
+import {
   generateComponentRedirectUrl,
   generateComponentStructuredData,
 } from '../utils/seo.js'
@@ -234,6 +238,7 @@ export class SkhemaComponent extends HTMLElement {
       'theme',
       'track-analytics',
       'source-url',
+      ...PROVENANCE_ATTRIBUTES,
     ]
   }
 
@@ -479,6 +484,7 @@ export class SkhemaComponent extends HTMLElement {
       authorSlug: this.getAttribute('author-slug'),
       contributorId: contributor_id,
       theme: actualTheme,
+      ...provenanceFromAttributes(this),
     })
 
     this.shadow.innerHTML = `<style>${styles}</style>${cardHtml}<slot style="display:none;"></slot>`

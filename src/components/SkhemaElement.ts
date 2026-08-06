@@ -11,6 +11,10 @@ import {
   trackEmbedLoad,
 } from '../utils/analytics.js'
 import { generateContentHash } from '../utils/hash.js'
+import {
+  PROVENANCE_ATTRIBUTES,
+  provenanceFromAttributes,
+} from '../utils/provenance.js'
 import { validateContentSecurity } from '../utils/sanitization.js'
 import {
   createAriaAttributes,
@@ -247,6 +251,7 @@ export class SkhemaElement extends HTMLElement {
       'source-url',
       'theme',
       'track-analytics',
+      ...PROVENANCE_ATTRIBUTES,
     ]
   }
 
@@ -447,6 +452,7 @@ export class SkhemaElement extends HTMLElement {
       authorSlug: this.getAttribute('author-slug'),
       contributorId: contributor_id,
       theme: actualTheme,
+      ...provenanceFromAttributes(this),
     })
 
     this.shadow.innerHTML = `<style>${styles}</style>${cardHtml}`

@@ -35,6 +35,7 @@ import {
   getComponentTypeLabel,
   resolveComponentType,
 } from '../utils/component-validation.js'
+import { formatProvenance, type ProvenanceFields } from '../utils/provenance.js'
 import { sanitizeContent } from '../utils/sanitization.js'
 import { getElementTypeLabel } from '../utils/validation.js'
 
@@ -46,8 +47,25 @@ import { getElementTypeLabel } from '../utils/validation.js'
  * detected page theme. Defaults to `'light'` when omitted. */
 export type { CardTheme }
 
-/** Author attribution shared by both card kinds. */
-interface AuthorFields {
+/** Source provenance carried on a card — see `utils/provenance.ts`. */
+export {
+  collapseProvenanceDate,
+  formatProvenance,
+  safeProvenanceUrl,
+} from '../utils/provenance.js'
+export type {
+  FormattedProvenance,
+  ProvenanceDateInput,
+  ProvenanceFields,
+} from '../utils/provenance.js'
+
+/**
+ * Author attribution shared by both card kinds.
+ *
+ * Author answers "who curated this"; the `provenance*` fields answer "who
+ * originated it" and are absent for content original to the author.
+ */
+interface AuthorFields extends ProvenanceFields {
   /** Display name. When omitted, falls back to a humanised `contributorId`. */
   authorName?: string | null
   /** Public contributor slug — when present, the name links to the profile. */
@@ -165,7 +183,43 @@ function renderAuthorHtml(author: AuthorFields, mutedColor: string): string {
   )
 }
 
-/** The shared footer (contributor line + save button + attribution). */
+/**
+ * Source line inner HTML: `Source: {organization}`, with the organization
+ * linked when the URL survives absolute-http(s) validation. Returns `''` when
+ * there is no provenance, so the caller emits no element at all — an absent
+ * source must leave no trace, not an empty line.
+ *
+ * Cards use the COMPACT format per the locked display rules; the document name
+ * and date travel on the card's attributes for the full-citation surfaces
+ * (element pages, detail panels) and are deliberately not shown here.
+ */
+function renderProvenanceHtml(
+  provenance: ProvenanceFields,
+  mutedColor: string
+): string {
+  const formatted = formatProvenance(provenance, 'compact')
+  if (!formatted) return ''
+
+  const organization = escapeHtml(formatted.organization)
+  const organizationHtml = formatted.url
+    ? `<a href="${escapeAttr(formatted.url)}" style="color:${mutedColor};text-decoration:underline;" target="_blank" rel="noopener noreferrer nofollow">${organization}</a>`
+    : organization
+
+  // A 200-char organization would otherwise wrap the footer onto several lines
+  // and unbalance the card. Clip to one line, with the full name on hover;
+  // email clients that ignore text-overflow simply show the untruncated name.
+  const clip =
+    'max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
+  const fullText = escapeAttr(`${formatted.label}: ${formatted.organization}`)
+
+  return (
+    `<div title="${fullText}" style="font-size:12px;line-height:1.4;color:${mutedColor};margin-top:6px;${clip}">` +
+    `${escapeHtml(formatted.label)}: ${organizationHtml}` +
+    `</div>`
+  )
+}
+
+/** The shared footer (contributor line + save button + source + attribution). */
 function renderFooter(
   saveUrl: string,
   author: AuthorFields,
@@ -182,6 +236,7 @@ function renderFooter(
     `<td style="text-align:right;vertical-align:middle;white-space:nowrap;">` +
     `<a href="${escapeAttr(saveUrl)}" class="skhema-save-btn" target="_blank" rel="noopener noreferrer" title="Save this to Skhema" style="display:inline-block;background:${PRIMARY_HEX};color:#ffffff;font-size:12px;font-weight:500;text-decoration:none;padding:6px 14px;border-radius:${CARD_RADIUS};white-space:nowrap;">Save to Skhema &rarr;</a>` +
     `</td></tr></table>` +
+    renderProvenanceHtml(author, p.textMuted) +
     `<div style="font-size:11px;line-height:1.4;color:${p.textMuted};margin-top:8px;">Strategy powered by <a href="https://skhema.com" style="color:${p.textMuted};text-decoration:underline;" target="_blank" rel="noopener noreferrer">Skhema</a></div>` +
     `</td></tr>`
   )

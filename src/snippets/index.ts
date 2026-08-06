@@ -24,10 +24,7 @@
  * shape, but are pure: `sourceUrl` and `timestamp` are parameters instead of
  * `window` reads, so the module is safe in Node, edge, and email runtimes.
  */
-import type {
-  ComponentValue,
-  ElementValue,
-} from '@skhema/method/vocabulary'
+import type { ComponentValue, ElementValue } from '@skhema/method/vocabulary'
 import {
   COMPONENT_TYPES,
   ELEMENT_TYPES,
@@ -39,10 +36,21 @@ import {
   type CardTheme,
 } from '../render/index.js'
 import { generateComponentHash, generateContentHash } from '../utils/hash.js'
+import {
+  collapseProvenanceDate,
+  safeProvenanceUrl,
+  type ProvenanceFields,
+} from '../utils/provenance.js'
 
 // Re-exported for DOM-free consumers (CLI, edge) that must not import the
 // main entry, whose custom-element registration touches the DOM.
 export { generateComponentHash, generateContentHash }
+
+// The `provenance-date` attribute is a pre-collapsed display string. Callers
+// holding the stored `{documentDate}` / `{dateRange}` shape collapse it with
+// this rather than re-deriving the en-dash rule.
+export type { ProvenanceDateInput } from '../utils/provenance.js'
+export { collapseProvenanceDate, safeProvenanceUrl }
 
 declare const __EMBED_VERSION__: string
 
@@ -93,11 +101,67 @@ export interface SnippetElementInput {
   content: string
 }
 
+/**
+ * Source provenance for generated snippets — "who originated this content",
+ * distinct from the contributor attribution above. Omit entirely for content
+ * original to the contributor.
+ */
+export interface SnippetProvenance {
+  /** Originating organization. Required for the group; nothing renders without it. */
+  organization: string
+  /** Title of the document the content was mapped from. */
+  documentName?: string
+  /** Absolute http(s) URL of the source document. */
+  url?: string
+  /** PRE-COLLAPSED display string, e.g. `2024–2027` or `2024-03`. */
+  date?: string
+}
+
+/** Options mixin for the generators that accept provenance. */
+export interface SnippetProvenanceOption {
+  provenance?: SnippetProvenance
+}
+
+/** Map provenance onto the locked flat `provenance-*` attribute contract. */
+function provenanceAttributes(
+  provenance: SnippetProvenance | undefined
+): Record<string, string> {
+  const organization = provenance?.organization?.trim()
+  if (!organization) return {}
+  const attributes: Record<string, string> = {
+    'provenance-org': organization,
+  }
+  if (provenance?.documentName?.trim())
+    attributes['provenance-document'] = provenance.documentName.trim()
+  // Drop an unlinkable URL HERE, not just at render: a snippet is copied into
+  // someone else's page, so a `javascript:` value that only goes inert on the
+  // far side is a defect the contributor never sees.
+  const url = safeProvenanceUrl(provenance?.url)
+  if (url) attributes['provenance-url'] = url
+  if (provenance?.date?.trim())
+    attributes['provenance-date'] = provenance.date.trim()
+  return attributes
+}
+
+/** Map provenance onto the card renderer's flat fields. */
+function provenanceRenderFields(
+  provenance: SnippetProvenance | undefined
+): ProvenanceFields {
+  return {
+    provenanceOrg: provenance?.organization,
+    provenanceDocument: provenance?.documentName,
+    provenanceUrl: provenance?.url,
+    provenanceDate: provenance?.date,
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * Validation                                                         *
  * ------------------------------------------------------------------ */
 
-function assertElementType(elementType: string): asserts elementType is ElementValue {
+function assertElementType(
+  elementType: string
+): asserts elementType is ElementValue {
   const valid = Object.values(ELEMENT_TYPES).map((t) => t.value)
   if (!valid.includes(elementType as (typeof valid)[number])) {
     throw new Error(
@@ -274,7 +338,8 @@ export function buildEmbedPageUrl(
  * Website snippets                                                   *
  * ------------------------------------------------------------------ */
 
-export interface WebsiteEmbedOptions extends SnippetAuthor {
+export interface WebsiteEmbedOptions
+  extends SnippetAuthor, SnippetProvenanceOption {
   elementType: string
   content: string
   theme?: 'light' | 'dark' | 'auto'
@@ -324,6 +389,7 @@ export function generateWebsiteEmbed(
   const attributes: Record<string, string> = {
     'element-type': elementType,
     ...authorAttributes(options),
+    ...provenanceAttributes(options.provenance),
   }
   if (theme && theme !== 'auto') attributes['theme'] = theme
   if (trackAnalytics === false) attributes['track-analytics'] = 'false'
@@ -336,7 +402,8 @@ export function generateWebsiteEmbed(
   return { snippet, cdnUrl: EMBED_CDN_URL, attributes }
 }
 
-export interface ComponentWebsiteEmbedOptions extends SnippetAuthor {
+export interface ComponentWebsiteEmbedOptions
+  extends SnippetAuthor, SnippetProvenanceOption {
   componentType: string
   elements: SnippetElementInput[]
   title?: string
@@ -364,6 +431,7 @@ export function generateComponentWebsiteEmbed(
   const attributes: Record<string, string> = {
     'component-type': componentType,
     ...authorAttributes(options),
+    ...provenanceAttributes(options.provenance),
   }
   if (title) attributes['title'] = title
   if (theme && theme !== 'auto') attributes['theme'] = theme
@@ -398,7 +466,8 @@ export function generateComponentWebsiteEmbed(
  * Email snippets                                                     *
  * ------------------------------------------------------------------ */
 
-export interface EmailEmbedOptions extends SnippetAuthor {
+export interface EmailEmbedOptions
+  extends SnippetAuthor, SnippetProvenanceOption {
   elementType: string
   content: string
   /** Fully-formed save URL override; omitted → built with `channel: 'email'`. */
@@ -422,7 +491,9 @@ export interface EmailEmbedResult {
 }
 
 /** Generate the canonical email-safe card for a single element. */
-export function generateEmailEmbed(options: EmailEmbedOptions): EmailEmbedResult {
+export function generateEmailEmbed(
+  options: EmailEmbedOptions
+): EmailEmbedResult {
   assertContributorId(options.contributorId)
   if (!options.content?.trim()) {
     throw new Error('content is required')
@@ -446,12 +517,14 @@ export function generateEmailEmbed(options: EmailEmbedOptions): EmailEmbedResult
     authorSlug: options.authorSlug,
     contributorId: options.contributorId,
     theme: options.theme ?? 'light',
+    ...provenanceRenderFields(options.provenance),
   })
 
   return { html, saveUrl }
 }
 
-export interface ComponentEmailEmbedOptions extends SnippetAuthor {
+export interface ComponentEmailEmbedOptions
+  extends SnippetAuthor, SnippetProvenanceOption {
   componentType: string
   elements: SnippetElementInput[]
   title?: string
@@ -495,6 +568,7 @@ export function generateComponentEmailEmbed(
     authorSlug: options.authorSlug,
     contributorId: options.contributorId,
     theme: options.theme ?? 'light',
+    ...provenanceRenderFields(options.provenance),
   })
 
   return { html, saveUrl }

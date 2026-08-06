@@ -14,6 +14,14 @@ export interface SkhemaElementAttributes {
   'source-url'?: string
   theme?: 'light' | 'dark' | 'auto'
   'track-analytics'?: 'true' | 'false'
+  /** Originating organization — the only provenance attribute that renders a line. */
+  'provenance-org'?: string
+  /** Title of the document the content was mapped from. */
+  'provenance-document'?: string
+  /** Absolute http(s) URL of the source document; anything else is ignored. */
+  'provenance-url'?: string
+  /** PRE-COLLAPSED display string, e.g. `2024–2027` or `2024-03`. */
+  'provenance-date'?: string
 }
 
 export interface EmbedAnalytics {
@@ -65,6 +73,14 @@ export interface SkhemaComponentAttributes {
   theme?: 'light' | 'dark' | 'auto'
   'track-analytics'?: 'true' | 'false'
   'source-url'?: string
+  /** Originating organization — the only provenance attribute that renders a line. */
+  'provenance-org'?: string
+  /** Title of the document the content was mapped from. */
+  'provenance-document'?: string
+  /** Absolute http(s) URL of the source document; anything else is ignored. */
+  'provenance-url'?: string
+  /** PRE-COLLAPSED display string, e.g. `2024–2027` or `2024-03`. */
+  'provenance-date'?: string
 }
 
 export interface ComponentContentData {

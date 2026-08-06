@@ -1,7 +1,13 @@
 /**
  * Hardcoded color tokens for component-type badge colors.
  * Embeds can't rely on host page CSS vars, so we use inline values.
- * Source: the Skhema web design tokens (oklch), converted to HSL-ish for browser compat.
+ *
+ * Canonical source: the `--component-*` tokens (light mode) in
+ * `@skhema/ui`'s theme.css, applied with the ratified
+ * recipe bg 15% / border 30% / text 100% of the component token
+ * (design-system guidelines/color-components.html, 2026-08-04).
+ * `design-tokens.test.ts` asserts value equality against that source —
+ * change theme.css and this file together.
  */
 
 export const COMPONENT_COLORS = {

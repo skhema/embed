@@ -32,12 +32,41 @@ import '@skhema/embed'
 
 ## Attributes
 
-| Attribute        | Required | Description                           |
-| ---------------- | -------- | ------------------------------------- |
-| `element-type`   | ✓        | Type of strategic element             |
-| `contributor-id` | ✓        | Your contributor identifier           |
-| `content`        |          | Alternative to inner text             |
-| `theme`          |          | Visual theme: `light`, `dark`, `auto` |
+| Attribute             | Required | Description                                       |
+| --------------------- | -------- | ------------------------------------------------- |
+| `element-type`        | ✓        | Type of strategic element                         |
+| `contributor-id`      | ✓        | Your contributor identifier                       |
+| `content`             |          | Alternative to inner text                         |
+| `theme`               |          | Visual theme: `light`, `dark`, `auto`             |
+| `provenance-org`      |          | Organization the content originated from          |
+| `provenance-document` |          | Title of the source document                      |
+| `provenance-url`      |          | Absolute `http(s)` URL of the source document     |
+| `provenance-date`     |          | Source date as a display string, e.g. `2024–2027` |
+
+### Source provenance
+
+Author attribution ("who curated this") and source provenance ("who originated
+this") are separate. Add the `provenance-*` attributes when the content is
+largely unedited from an external document; omit them entirely for content
+original to you. The card then renders a `Source: {organization}` line beneath
+the contributor byline, linking the organization when `provenance-url` is an
+absolute `http(s)` URL — anything else renders as plain text, never a link.
+
+Each attribute degrades on its own: without `provenance-org` nothing renders at
+all (no empty line, no dangling separators).
+
+```html
+<skhema-element
+  element-type="key_challenge"
+  contributor-id="analyst"
+  provenance-org="Australian Sports Commission"
+  provenance-document="Play Well Strategy"
+  provenance-url="https://www.example.org/sport-strategy"
+  provenance-date="2024–2027"
+>
+  Participation in community sport is falling among 15–17 year olds.
+</skhema-element>
+```
 
 ## Element Types
 
@@ -91,6 +120,9 @@ const html = renderElementCardHtml({
   authorSlug: 'jordan-mills', // optional; links the name to the profile
   contributorId: 'ctr_123', // optional; author-name fallback source
   theme: 'light', // 'light' (default) | 'dark'
+  provenanceOrg: 'Australian Sports Commission', // optional; renders "Source: …"
+  provenanceUrl: 'https://www.example.org/sport-strategy', // optional; links the org
+  provenanceDerived: false, // optional; true renders "Derived from: …"
 })
 
 // Component card (the renderer groups elements by type)
@@ -138,6 +170,19 @@ const { snippet } = generateWebsiteEmbed({
   authorSlug: 'jordan-mills',
 })
 ```
+
+The four card generators (website + email, element + component) accept an
+optional `provenance` object (`{ organization, documentName?, url?, date? }`),
+emitted as the flat `provenance-*` attributes on website snippets and rendered
+as the `Source:` line on email cards. The save-URL builders take no provenance —
+a `/save` link carries no card. A `url` that is not an absolute `http(s)` URL is
+dropped at generation, so a copied snippet never ships an unusable link.
+
+`date` is a pre-collapsed display string. Callers holding the stored shape
+should collapse it with `collapseProvenanceDate({ documentDate, dateRange })`
+(exported from both `/snippets` and `/render`) rather than re-deriving the rule
+— it owns the en-dash range format, and collapses an equal-ended or one-ended
+range to a single date.
 
 Component variants exist for every generator (`generateComponentWebsiteEmbed`,
 `generateComponentEmailEmbed`, `buildComponentSaveUrl`). Inputs are validated
