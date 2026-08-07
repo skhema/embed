@@ -71,7 +71,7 @@ all (no empty line, no dangling separators).
 ## Element Types
 
 - `key_challenge` - Business challenges
-- `supporting_fact` - Evidence and data points
+- `fact` - Evidence and data points
 - `guiding_policy` - Strategic approaches
 - `solution` - Potential solutions
 - And more...
@@ -131,7 +131,7 @@ const componentHtml = renderComponentCardHtml({
   title: 'Second-hand apparel shift', // optional
   elements: [
     { elementType: 'key_challenge', content: '…' },
-    { elementType: 'supporting_fact', content: '…' },
+    { elementType: 'fact', content: '…' },
   ],
   saveUrl: 'https://app.skhema.com/save?...',
   authorName: 'Jordan Mills',

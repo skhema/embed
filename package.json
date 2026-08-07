@@ -1,6 +1,6 @@
 {
   "name": "@skhema/embed",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Embeddable component for integrating strategic elements with Skhema.",
   "keywords": [
     "skhema",
@@ -55,7 +55,7 @@
   "unpkg": "dist/embed.min.js",
   "jsdelivr": "dist/embed.min.js",
   "dependencies": {
-    "@skhema/method": "0.5.0"
+    "@skhema/method": "0.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
